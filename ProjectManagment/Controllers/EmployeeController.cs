@@ -20,7 +20,7 @@ namespace ProjectManagment.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Project>> GetEmployeeById(int id)
+        public async Task<ActionResult<Employee>> GetEmployeeById(int id)
         {
             var project = await context.Employees.FirstOrDefaultAsync(x => x.EmployeeId == id);
 
@@ -34,7 +34,7 @@ namespace ProjectManagment.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Project>> CreateEmployee([FromBody] CreateEmployeeDto employeeDto )
+        public async Task<ActionResult<Employee>> CreateEmployee([FromBody] CreateEmployeeDto employeeDto )
         {
             var employee = new Employee()
             {
@@ -51,31 +51,42 @@ namespace ProjectManagment.Controllers
         }
 
 
-        [HttpPut("{id}")]
+
+        [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Project>> UpdateEmployee(int id, [FromBody] UpdateEmployeeDto employeeDto)
+        public async Task<ActionResult<Employee>> UpdateEmployee([FromBody] UpdateEmployeeDto employeeDto)
         {
-            var employee = new Employee()
-            {
-                EmployeeId = employeeDto.EmployeeId,
-                FirstName = employeeDto.FirstName,
-                LastName = employeeDto.LastName,
-                Email = employeeDto.Email,
-                Patronymic = employeeDto.Patronymic
-            };
+            var employee = await context.Employees.FirstOrDefaultAsync(x => x.EmployeeId == employeeDto.EmployeeId);
+
+            if (employee == null)
+                return NotFound($"Не найден сотрудник с Id = {employeeDto.EmployeeId}");
+
+            employee.FirstName = employeeDto.FirstName;
+            employee.LastName = employeeDto.LastName;
+            employee.Email = employeeDto.Email;
+            employee.Patronymic = employeeDto.Patronymic;
+
+            context.Employees.Update(employee);
+
             await context.SaveChangesAsync();
 
             return Ok(employee);
         }
 
 
+
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Project>> DeleteEmployee(int id)
+        public async Task<ActionResult<Employee>> DeleteEmployee(int id)
         {
             var employee = await context.Employees.FirstOrDefaultAsync(x => x.EmployeeId == id);
+            if(employee == null)
+            {
+                return NotFound(id);
+            }
+
             context.Employees.Remove(employee);
             await context.SaveChangesAsync();
             return Ok(id);

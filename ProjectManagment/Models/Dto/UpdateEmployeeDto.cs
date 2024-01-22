@@ -1,4 +1,6 @@
-﻿namespace ProjectManagment.Models.Dto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ProjectManagment.Models.Dto
 {
     public class UpdateEmployeeDto
     {

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectManagment.Data;
 using ProjectManagment.Models;
 using ProjectManagment.Models.Dto;
+using System.Xml.Linq;
 
 namespace ProjectManagment.Controllers
 {
@@ -52,22 +53,26 @@ namespace ProjectManagment.Controllers
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Project>> UpdateEmployee(int id, [FromBody] UpdateProjectDto projectDto)
+        public async Task<ActionResult<Project>> UpdateEmployee([FromBody] UpdateProjectDto projectDto)
         {
-            var project = new Project()
-            {
-                ProjectId = projectDto.ProjectId,
-                Name = projectDto.Name,
-                CustomerCompany = projectDto.CustomerCompany,
-                ExecutorCompany = projectDto.ExecutorCompany,
-                StartDate = projectDto.StartDate,
-                EndDate = projectDto.EndDate,
-                Priority = projectDto.Priority,
-                ManagerId = projectDto.ManagerId,
-            };
+            var project = await context.Projects.FirstOrDefaultAsync(x => x.ProjectId == projectDto.ProjectId);
+
+            if (project == null)
+                return NotFound($"Не найден сотрудник с Id = {projectDto.ProjectId}");
+
+            project.Name = projectDto.Name;
+            project.CustomerCompany = projectDto.CustomerCompany;
+            project.ExecutorCompany = projectDto.ExecutorCompany;
+            project.StartDate = projectDto.StartDate;
+            project.EndDate = projectDto.EndDate;
+            project.Priority = projectDto.Priority;
+            project.ManagerId = projectDto.ManagerId;
+
+            context.Projects.Update(project);
+
             await context.SaveChangesAsync();
             return Ok(project);
         }
@@ -80,7 +85,7 @@ namespace ProjectManagment.Controllers
         {
             var project = await context.Projects.FirstOrDefaultAsync(x => x.ProjectId == id);
             context.Projects.Remove(project);
-            await context.SaveChangesAsync(); // Возвращаем 200 OK после успешного удаления
+            await context.SaveChangesAsync();
 
             return Ok(id);
         }
